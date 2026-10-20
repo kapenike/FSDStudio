@@ -61,10 +61,6 @@ class dataset {
 				// get dataset
 				$dataset = json_decode(file_get_contents($data_path));
 				
-				// empty create / delete object key for use in front end actions
-				$dataset->create = '';
-				$dataset->delete = '';
-				
 				// return dataset
 				return $dataset;
 				
@@ -91,13 +87,6 @@ class dataset {
 	}
 
 	function save($project_uid, $uid, $save) {
-		// ensure create / delete front end actions arent saved
-		if (isset($save->create)) {
-			unset($save->create);
-		}
-		if (isset($save->delete)) {
-			unset($save->delete);
-		}
 		file_put_contents(getBasePath().'/data/'.$project_uid.'/datasets/'.$uid.'/data.json', json_encode($save));
 		return true;
 	}
@@ -171,10 +160,6 @@ class dataset {
 		
 		// save dataset
 		$this->save($post['project_uid'], $dataset->uid, $dataset);
-		
-		// ensure returned dataset has create and delete endpoints after save removed them
-		$dataset->create = '';
-		$dataset->delete = '';
 		
 		// return dataset
 		app('respond')->json(true, $dataset);

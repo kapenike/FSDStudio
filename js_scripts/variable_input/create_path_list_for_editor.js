@@ -42,6 +42,11 @@ function createPathListForEditor(path = null, base_path = null) {
 			}
 			curr_path = curr_path[nest[i]];
 		}
+		// if ending at data set, forward into entries rather than sitting at the dataset structure level
+		if (is_data_set && isObject(curr_path) && typeof curr_path.entries !== 'undefined') {
+			curr_path = curr_path.entries;
+			path += '/entries';
+		}
 	}
 	
 	// sort output list
