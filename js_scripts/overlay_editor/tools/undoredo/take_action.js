@@ -274,31 +274,46 @@ class ols {
 			if (this.isNonIdEffectAction(state.action)) {
 				// do nothing
 			} else {
-
-				// prevent direct move find if found from id conversions
-				let found = false;
-					
-				let id_diffs = dir < 0 ? state.id_diff : Object.fromEntries(Object.entries(state.id_diff).map(([k, v]) => [v, k]));
 				
-				// determine if direct match or attempt to find parent change
-				if (typeof id_diffs[GLOBAL.overlay_editor.active_layer] !== 'undefined') {
-					GLOBAL.overlay_editor.active_layer = id_diffs[GLOBAL.overlay_editor.active_layer];
-					found = true;
-				} else {
-					let parent_change = this.isParentTo(GLOBAL.overlay_editor.active_layer, id_diffs);
-					if (parent_change !== null) {
-						GLOBAL.overlay_editor.active_layer = parent_change;
-						found = true;
+				// prevent id diff lookup if move was successful
+				let found = false;
+
+				// conditions for layer move of active layer
+				if (state.action == 'move') {
+					if (dir > 0) {
+						if (state.diff.id == GLOBAL.overlay_editor.active_layer) {
+							GLOBAL.overlay_editor.active_layer = state.diff.new_id;
+							found = true;
+						} else if (GLOBAL.overlay_editor.active_layer.startsWith(state.diff.id)) {
+							found = true;
+							GLOBAL.overlay_editor.active_layer = state.diff.new_id+GLOBAL.overlay_editor.active_layer.slice(state.diff.id.length);
+						}
+					} else if (dir < 0) {
+						if (state.diff.new_id == GLOBAL.overlay_editor.active_layer) {
+							found = true;
+							GLOBAL.overlay_editor.active_layer = state.diff.id;
+						} else if (GLOBAL.overlay_editor.active_layer.startsWith(state.diff.new_id)) {
+							found = true;
+							GLOBAL.overlay_editor.active_layer = state.diff.id+GLOBAL.overlay_editor.active_layer.slice(state.diff.new_id.length);
+						}
 					}
 				}
+
+				// if not a move action, check for id diff id conversion
+				if (found == false) {
+
+					let id_diffs = dir < 0 ? state.id_diff : Object.fromEntries(Object.entries(state.id_diff).map(([k, v]) => [v, k]));
 					
-				// conditions for layer move of active layer
-				if (found == false && state.action == 'move') {
-					if (dir > 0 && state.diff.id == GLOBAL.overlay_editor.active_layer) {
-						GLOBAL.overlay_editor.active_layer = state.diff.new_id;
-					} else if (dir < 0 && state.diff.new_id == GLOBAL.overlay_editor.active_layer) {
-						GLOBAL.overlay_editor.active_layer = state.diff.id;
+					// determine if direct match or attempt to find parent change
+					if (typeof id_diffs[GLOBAL.overlay_editor.active_layer] !== 'undefined') {
+						GLOBAL.overlay_editor.active_layer = id_diffs[GLOBAL.overlay_editor.active_layer];
+					} else {
+						let parent_change = this.isParentTo(GLOBAL.overlay_editor.active_layer, id_diffs);
+						if (parent_change !== null) {
+							GLOBAL.overlay_editor.active_layer = parent_change;
+						}
 					}
+					
 				}
 
 			}
@@ -429,12 +444,23 @@ class ols {
 				
 				}
 				
-			} else if (this.changes[i].action == 'move' && this.changes[i].diff.new_id == id) {
+			} else if (this.changes[i].action == 'move') {
 				
-				// direct move conversion, log and then continue to prevent id diff change on this layer
-				pos_id_map[i] = id;
-				id = this.changes[i].diff.id;
-				continue;
+				if (this.changes[i].diff.new_id == id) {
+					
+					// direct move conversion, log and then continue to prevent id diff change on this layer
+					pos_id_map[i] = id;
+					id = this.changes[i].diff.id;
+					continue;
+					
+				} else if (id.startsWith(this.changes[i].diff.new_id)) {
+					
+					// move is parent to child, give parent id conversion to child
+					pos_id_map[i] = id;
+					id = this.changes[i].diff.id+id.slice(this.changes[i].diff.new_id.length);
+					continue;
+					
+				}
 				
 			}
 			

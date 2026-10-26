@@ -31,10 +31,6 @@ function manageDataStructure(container, data, submit_to_application) {
 	
 }
 
-function isObject(v) {
-	return v != null && v.constructor.name === 'Object';
-}
-
 function ensureProperNaming(elem) {
 	elem.value = elem.value.replaceAll(' ', '_').replace(/[\W]/g, '');
 }

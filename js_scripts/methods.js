@@ -1,3 +1,7 @@
+function isObject(v) {
+	return v != null && v.constructor.name === 'Object';
+}
+
 function precise(v) {
 	return parseFloat(Math.trunc(v * 100) / 100);
 }
