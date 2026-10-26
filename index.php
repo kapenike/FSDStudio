@@ -7,7 +7,7 @@ require 'app.php';
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <?php
 // import all scripts from "ui_scripts"
-forEach(app('directoryFileList')->get([], './js_scripts') as $file) {
+forEach(app('directoryFileList')->get([], './scripts') as $file) {
 	echo '<script src="'.$file.'" type="text/javascript"></script>'."\r\n";
 }
 ?>
@@ -40,7 +40,7 @@ document.addEventListener('DOMContentLoaded', function() {
 					document.fonts.add(loaded_font);
 					loaded_fonts++;
 					if (loaded_fonts == to_load_fonts) {
-						// (./js_scripts/main.js)
+						// (./scripts/main.js)
 						initStreamOverlay();
 					}
 				});
@@ -48,7 +48,7 @@ document.addEventListener('DOMContentLoaded', function() {
 		}
 	});
 	if (to_load_fonts == 0) {
-		// (./js_scripts/main.js)
+		// (./scripts/main.js)
 		initStreamOverlay();
 	}
 });

@@ -1,0 +1,585 @@
+<?php
+
+class project {
+	
+	private $registry;
+	
+	// on load, get list of project uid | project name pair
+	function __construct() {
+		if (!file_exists(getBasePath().'/apps/app_data/project_registry.json')) {
+			file_put_contents(getBasePath().'/apps/app_data/project_registry.json', '{}');
+		}
+		$this->registry = json_decode(file_get_contents(getBasePath().'/apps/app_data/project_registry.json'));
+	}
+	
+	function readRegistry() {
+		return $this->registry;
+	}
+	
+	function returnRegistry() {
+		app('respond')->json(true, $this->registry);
+	}
+	
+	// save current project registry
+	function saveRegistry() {
+		file_put_contents(getBasePath().'/apps/app_data/project_registry.json', json_encode($this->registry));
+	}
+	
+	function updateSettings($uid, $post) {
+		
+		// update registry with new title
+		$this->registry->{$uid} = $post['project_title'];
+		$this->saveRegistry();
+		
+		// get settings file, update, then put back
+		$settings = json_decode(file_get_contents(getBasePath().'/data/'.$uid.'/container.json'));
+		
+		// legacy fix
+		if (!is_object($settings->settings)) {
+			$settings->settings = (object)[];
+		}
+		
+		// disable asset preload
+		$settings->settings->disable_asset_preload = isset($post['disable_asset_preload']);
+
+		file_put_contents(getBasePath().'/data/'.$uid.'/container.json', json_encode($settings));
+		
+		// all good
+		app('respond')->json(true, 'project settings updated.');
+	}
+	
+	function updateIntegrations($uid, $post) {
+		
+		// get settings file, update, then put back
+		$settings = json_decode(file_get_contents(getBasePath().'/data/'.$uid.'/container.json'));
+		
+		// legacy fix for integrations as subset of settings
+		if (!isset($settings->settings->integrations)) {
+			$settings->settings->integrations = (object)[];
+		}
+		
+		// ensure integration id was sent
+		if (!isset($post['integration_id'])) {
+			app('respond')->json(false, 'No integration id sent.');
+		}
+		
+		// ensure integration data container exists
+		if (!isset($settings->settings->integrations->{$post['integration_id']})) {
+			$settings->settings->integrations->{$post['integration_id']} = (object)[];
+		}
+		
+		// post all non system fields directly to object
+		foreach ($post as $key => $value) {
+			if ($key != 'integration_id' && $key != 'project_uid' && $key != 'application') {
+				$settings->settings->integrations->{$post['integration_id']}->{$key} = $value;
+			}
+		}
+		
+		// edge case for enabled field boolean
+		if (!isset($post['enabled']) && isset($settings->settings->integrations->{$post['integration_id']}->enabled)) {
+			$settings->settings->integrations->{$post['integration_id']}->enabled = false;
+		} else if (isset($post['enabled'])) {
+			$settings->settings->integrations->{$post['integration_id']}->enabled = true;
+		}
+		
+		file_put_contents(getBasePath().'/data/'.$uid.'/container.json', json_encode($settings));
+		
+		// all good
+		app('respond')->json(true, 'Project integration updated.', [
+			'integration_id' => $post['integration_id'],
+			'complete_return' => $settings->settings->integrations->{$post['integration_id']}
+		]);
+		
+	}
+	
+	function register($project_name) {
+		
+		// request new uid
+		$uid = app('uid')->generate();
+		
+		// add to registry
+		$this->registry->{$uid} = $project_name;
+		
+		// save registry
+		$this->saveRegistry();
+		
+		// create project directory
+		mkdir(getBasePath().'/data/'.$uid);
+		
+		// create project overlay output directory
+		mkdir(getBasePath().'/overlay_output/'.$uid);
+		
+		// create project sources directory
+		mkdir(getBasePath().'/data/'.$uid.'/sources');
+		
+		// create project data sets directory
+		mkdir(getBasePath().'/data/'.$uid.'/datasets');
+		
+		// create skeleton data set registry file
+		file_put_contents(getBasePath().'/data/'.$uid.'/datasets/registry.json', json_encode((object)[]));
+		
+		// create project overlay data directory
+		mkdir(getBasePath().'/data/'.$uid.'/overlays');
+		
+		// create skeleton overlay registry file
+		file_put_contents(getBasePath().'/data/'.$uid.'/overlay_registry.json', json_encode([]));
+		
+		// create project container json file
+		file_put_contents(getBasePath().'/data/'.$uid.'/container.json', json_encode((object)[
+			'uid' => $uid,
+			'settings' => (object)[
+				'disable_asset_preload' => false,
+				'integrations' => (object)[
+					'voicemeeter' => (object)[
+						'enabled' => false,
+						'api_dll' => 'C:\Program Files (x86)\VB\Voicemeeter\VoicemeeterRemote64.dll'
+					],
+					'obs' => (object)[
+						'enabled' => false,
+						'location' => 'localhost:4455',
+						'auth' => ''
+					]
+				]
+			]
+		]));
+		
+		// create skeleton data file
+		file_put_contents(getBasePath().'/data/'.$uid.'/data.json', json_encode((object)[]));
+		
+		// create skeleton ui file
+		file_put_contents(getBasePath().'/data/'.$uid.'/ui.json', json_encode([]));
+		
+		// create skeleton asset registry file
+		file_put_contents(getBasePath().'/data/'.$uid.'/asset_registry.json', json_encode((object)[]));
+		
+		// never fail ... plz
+		app('respond')->json(true, 'Registered new project successfully.', [
+			'uid' => $uid
+		]);
+		
+	}
+	
+	// $project_uid(string) - project uid
+	function load($project_uid, $backend_return = false) {
+		
+		// check if project exists
+		if (isset($this->registry->{$project_uid})) {
+			
+			// path to project data
+			$data_path = getBasePath().'/data/'.$project_uid.'/';
+			
+			// ensure project directory exists
+			if (is_dir($data_path)) {
+				
+				// get project data head
+				$project_data = json_decode(file_get_contents($data_path.'container.json'));
+				
+				// set project title from registry
+				$project_data->title = $this->registry->{$project_uid};
+				
+				// import project data
+				$project_data->data = json_decode(file_get_contents($data_path.'data.json'));
+				
+				// import project assets as a subset to data
+				$project_data->data->assets = app('asset')->getRegistry($project_uid);
+				
+				// data set structures
+				$project_data->data->sets = app('dataset')->loadAll($project_uid);
+				
+				// import project data ui
+				$project_data->ui = json_decode(file_get_contents($data_path.'ui.json'));
+				
+				// import project overlays
+				$project_data->overlays = app('overlay')->getAll($project_uid);
+				
+				// append cwd
+				$project_data->cwd = getcwd();
+				
+				// return project data
+				if ($backend_return) {
+					return $project_data;
+				} else {
+					app('respond')->json(true, $project_data);
+				}
+				
+			}
+			
+		}
+		
+		if ($backend_return) {
+			return false;
+		} else {
+			app('respond')->json(false, 'project UID not found.');
+		}
+		
+	}
+	
+	// $project_uid(string), $section - specific data section to load
+	function loadSection($project_uid, $section) {
+		return json_decode(file_get_contents(getBasePath().'/data/'.$project_uid.'/'.$section.'.json'));
+	}
+	
+	// $project_uid(string) - project uid, $section - section to write to, $save - object
+	function save($project_uid, $section, $save) {
+		file_put_contents(getBasePath().'/data/'.$project_uid.'/'.$section.'.json', json_encode($save));
+		return true;
+	}
+	
+	function updateprojectDetails($uid, $post, $dataset_create_passthrough) {
+		
+		// get original project data
+		$project_data = $this->loadSection($uid, 'data');
+		
+		// loop post keys and attempt to update object paths within project object
+		foreach ($_POST as $key => $value) {
+			
+			// if variable path
+			if (substr($key, 0, 5) == '$var$' && substr($key, -6) == '$/var$') {
+
+				// if containers pointer, remove
+				if (str_contains($key, '$pointer$')) {
+					$key = explode('$pointer$', $key)[0].explode('$/pointer$', $key)[1];
+				}
+				
+				// create base path as reference to project data property
+				$base_path = &$project_data;
+				
+				// explode and traverse path until empty
+				$path = explode('/', substr($key, 5, -6));
+
+				while(count($path) > 0) {
+					// shift from path into reference path
+					$base_path = &$base_path->{array_shift($path)};
+				}
+				$base_path = $value;
+				
+			}
+		}
+		
+		// update data file with project data object
+		$this->save($uid, 'data', $project_data);
+		
+		app('respond')->json(true, 'project data successfully updated.', ["created_dataset_entries" => $dataset_create_passthrough]);
+		
+	}
+	
+	function updateprojectDataStructure($uid, $data_structure) {
+		$this->save($uid, 'data', $data_structure);
+		app('respond')->json(true, 'Project data structure successfully updated.');
+	}
+	
+	function updateprojectUI($uid, $data) {
+		file_put_contents(getBasePath().'/data/'.$uid.'/ui.json', $data);
+		app('respond')->json(true, 'Project UI successfully updated.');
+	}
+	
+	function chunkUploadProject($page, $pages, $chunk) {
+		
+		if (!isset($chunk)) {
+			app('respond')->json(false, 'File chunk was not sent.');
+		}
+		
+		$location = getBasePath().'/data/import.tmp';
+		$end_location = getBasePath().'/data/import.zip';
+		
+		// init temp file
+		if ($page == 0) {
+			if (file_exists($location)) {
+				unlink($location);
+			}
+			if (file_exists($end_location)) {
+				unlink($end_location);
+			}
+			file_put_contents($location, '');
+		}
+		
+		// get chunk
+		$file_chunk = file_get_contents($_FILES['chunk']['tmp_name']);
+		
+		// append chunk or error out
+		if (file_put_contents($location, $file_chunk, FILE_APPEND) === false) {
+			app('respond')->json(false, 'Failed to properly store file chunk.');
+		}
+		
+		// end process or send back status
+		if ($page == $pages-1) {
+			rename($location, $end_location);
+			app('respond')->json(true, 'Upload Complete');
+		} else {
+			app('respond')->json(true, 'Chunk Uploaded: '.($page+1).' of '.$pages.'.');
+		}
+		
+	}
+	
+	function import($uid, $use_import_uid) {
+
+		if (file_exists(getBasePath().'/data/import.zip')) {
+			
+			// uploaded file name
+			$file_name = 'import.zip';
+			
+			// notify response if importing fonts
+			$importing_fonts = false;
+			
+			// extract project archive to the current project directory
+			$zip = new ZipArchive;
+			if ($zip->open(getBasePath().'/data/'.$file_name) === true) {
+				
+				// rename data directory, preserved incase of error fallback
+				rename(getBasePath().'/data/'.$uid, getBasePath().'/data/fallback');
+				
+				// create new directory for zip extraction
+				mkdir(getBasePath().'/data/'.$uid);
+				
+				// extract to
+				$zip->extractTo(getBasePath().'/data/'.$uid);
+				$zip->close();
+				
+				// if overriding uid with import uid
+				if ($use_import_uid) {
+					
+					// get uid from import
+					$import_uid = json_decode(file_get_contents(getBasePath().'/data/'.$uid.'/container.json'))->uid;
+					
+					// skip logic if uid is same as current project uid
+					if ($uid != $import_uid) {
+
+						// ensure import uid is not in use in another project, imports without uid change are already guaranteed to be unique so this check is only done here
+						if (isset($this->registry->{$import_uid})) {
+							
+							// remove imported project data files and directories, false flag to remove directory master too
+							app('directoryFileList')->delete(getBasePath().'/data/'.$uid, false);
+							
+							// remove uploaded archive
+							unlink(getBasePath().'/data/'.$file_name);
+							
+							// rename fallback directory
+							rename(getBasePath().'/data/fallback', getBasePath().'/data/'.$uid);
+							
+							app('respond')->json(false, '', (object)[
+								'text' => 'The imported project UID: '.$import_uid.' is already in use in a different project. Did you mean to overwrite the existing project "'.$this->registry->{$import_uid}.'" ? If not, try unchecking the "Overwrite UID with import project UID" checkbox and import this new project with the current local uid.',
+								'import_uid' => $import_uid
+							]);
+						}
+						
+						// otherwise, rename project data directory
+						rename(getBasePath().'/data/'.$uid, getBasePath().'/data/'.$import_uid);
+						
+						// rename project overlay output directory
+						rename(getBasePath().'/overlay_output/'.$uid, getBasePath().'/overlay_output/'.$import_uid);
+						
+						// remove old uid from registry
+						unset($this->registry->{$uid});
+						
+						// then override uid with import uid for remaining import logic
+						$uid = $import_uid;
+						
+					}
+					
+				}
+				
+				// register new project name
+				$this->registry->{$uid} = file_get_contents(getBasePath().'/data/'.$uid.'/project_name.txt');
+				
+				// save registry
+				$this->saveRegistry();
+				
+				// update imported project data container with the new project uid
+				$data_container = json_decode(file_get_contents(getBasePath().'/data/'.$uid.'/container.json'));
+				$data_container->uid = $uid;
+				file_put_contents(getBasePath().'/data/'.$uid.'/container.json', json_encode($data_container));
+				
+				// remove temporary project name file
+				unlink(getBasePath().'/data/'.$uid.'/project_name.txt');
+				
+				// if importing fonts
+				if (file_exists(getBasePath().'/data/'.$uid.'/fonts') && file_exists(getBasePath().'/data/'.$uid.'/fonts/import_font_registry.json')) {
+					// new fonts
+					$import_fonts = json_decode(file_get_contents(getBasePath().'/data/'.$uid.'/fonts/import_font_registry.json'));
+					// existing fonts
+					$app_fonts = app('fonts')->getFontRegistry();
+					foreach ($import_fonts as $font => $font_data) {
+						if (!isset($app_fonts->{$font})) {
+							// prepare new font entry container
+							$app_fonts->{$font} = (object)['fonts' => []];
+						}
+						// loop font styles within import font container
+						foreach ($font_data->fonts as $font_entry) {
+							$font_found = null;
+							foreach ($app_fonts->{$font}->fonts as $index => $existing_font) {
+								if ($existing_font->style == $font_entry->style && $existing_font->weight == $font_entry->weight) {
+									$font_found = $index;
+									break;
+								}
+							}
+							if ($font_found !== null) {
+								// if style found, insert new entry incase of font file changes
+								$app_fonts->{$font}->fonts[$font_found] = $font_entry;
+							} else {
+								// if not found, prepare for front-end notification to reload for new font load
+								$importing_fonts = true;
+								// insert new font style
+								$app_fonts->{$font}->fonts[] = $font_entry;
+							}							
+							// always move imported font to project font directory, assumed newest
+							if (file_exists(getBasePath().'/data/'.$uid.'/fonts/'.$font_entry->filename)) {
+								if ($font_found !== null && file_exists(getBasePath().'/fonts/'.$app_fonts->{$font}->fonts[$font_found]->filename)) {
+									unlink(getBasePath().'/fonts/'.$app_fonts->{$font}->fonts[$font_found]->filename);
+								}
+								rename(getBasePath().'/data/'.$uid.'/fonts/'.$font_entry->filename, getBasePath().'/fonts/'.$font_entry->filename);
+							}
+						}
+					}
+					app('fonts')->saveFontRegistry($app_fonts);
+					unlink(getBasePath().'/data/'.$uid.'/fonts/import_font_registry.json');
+					rmdir(getBasePath().'/data/'.$uid.'/fonts');
+				}
+				
+				// clear old overlay output directory
+				app('directoryFileList')->delete(getBasePath().'/overlay_output/'.$uid);
+				
+				// remove fallback directory
+				app('directoryFileList')->delete(getBasePath().'/data/fallback', false);
+				
+			} else {
+				
+				app('respond')->json(false, 'Project archive unable to be opened. Does your PHP.ini have "extension=zip" enabled?');
+				
+			}
+			
+			// remove uploaded archive
+			unlink(getBasePath().'/data/'.$file_name);
+			
+			// return imported project name
+			app('respond')->json(true, 'Project imported successfully.', [
+				'project_name' => $this->registry->{$uid},
+				'return_uid' => $uid,
+				'font_import' => $importing_fonts
+			]);
+			
+			
+		}	else {
+			app('respond')->json(false, 'An error occurred while retrieving the uploaded project archive.');
+		}			
+	}
+	
+	function export($uid, $preserve_auth_tokens) {
+
+		// prevent user abort
+		ignore_user_abort(true);
+		
+		$project_name = app('files')->makeFileNameSafe($this->registry->{$uid});
+		
+		$zip = new ZipArchive;
+		if ($zip->open($project_name.'.fsdi', ZipArchive::CREATE) === true) {
+			
+			// log project name
+			$zip->addFromString('project_name.txt', $project_name);
+			
+			// collect used fonts and include in export
+			$used_fonts = $this->collectFontsFrom(app('overlay')->getAll($uid));
+			$font_export_registry = (object)[];
+			if (count($used_fonts) > 0) {
+				$font_registry = json_decode(file_get_contents(getBasePath().'/fonts/font_registry.json'));
+				foreach ($font_registry as $font => $data) {
+					if (!isset($data->is_default) && in_array($font, $used_fonts)) {
+						$font_export_registry->{$font} = $data;
+						foreach ($data->fonts as $font_entry) {
+							$zip->addFile(getBasePath().'fonts/'.$font_entry->filename, 'fonts/'.$font_entry->filename);
+						}
+					}
+				}
+				if (count((array)$font_export_registry) > 0) {
+					$zip->addFromString('fonts/import_font_registry.json', json_encode($font_export_registry));
+				}
+			}
+			
+			// set a base path
+			$base_path = getBasePath().'data/'.$uid;
+			
+			// add files to zip archive
+			foreach (app('directoryFileList')->get([], $base_path) as $file_path) {
+				if ($preserve_auth_tokens == 'false' && $file_path == $base_path.'/container.json') {
+					// if not preserving auth tokens, get settings integration container and strip all auth key values
+					$clean_container = json_decode(file_get_contents($file_path));
+					foreach ($clean_container->settings->integrations as $integration => $values) {
+						foreach ($values as $key => $value) {
+							if ($key == 'auth_token' || str_contains($key, 'auth')) {
+								$clean_container->settings->integrations->{$integration}->$key = '';
+							}
+						}
+					}
+					$zip->addFromString('container.json', json_encode($clean_container));
+				} else {
+					$zip->addFile($file_path, str_replace($base_path.'/', '', $file_path));
+				}
+			}
+			
+			// save project archive
+			$zip->close();
+			
+			// front end will now redirect to downloadAndDelete method below
+			app('respond')->json(true, 'Archive successfully create.', ['project_name' => $project_name]);
+			
+		} else {
+			app('respond')->json(false, 'Error creating archive export for project: '.$project_name);
+		}
+		
+	}
+	
+	function collectFontsFrom($obj, $fonts = []) {
+		if (is_array($obj)) {
+			foreach ($obj as $arr) {
+				$fonts = $this->collectFontsFrom($arr, $fonts);
+			}
+		} else if (is_object($obj)) {
+			foreach ($obj as $key => $value) {
+				if ($key == 'font') {
+					$rnfont = trim($value, "'");
+					if (!in_array($rnfont, $fonts)) {
+						$fonts[] = $rnfont;
+					}
+				} else {
+					$fonts = $this->collectFontsFrom($value, $fonts);
+				}
+			}
+		}
+		return $fonts;
+	}
+	
+	function downloadAndDeleteExport($project_name) {
+		
+		// prevent user abort
+		ignore_user_abort(true);
+		
+		// open stream to download exported archive and then remove it
+		header('Content-Type: application/octet-stream');
+		header('Content-Transfer-Encoding: Binary'); 
+		header('Content-disposition: attachment; filename="'.$project_name.'.fsdi"'); 
+		readfile($project_name.'.fsdi'); 
+		unlink($project_name.'.fsdi');
+		
+	}
+	
+	function deleteProject($uid) {
+		
+		// remove project from registry
+		unset($this->registry->{$uid});
+		
+		// save registry
+		$this->saveRegistry();
+		
+		// delete project data directory
+		app('directoryFileList')->delete(getBasePath().'/data/'.$uid, false);
+		
+		// delete project overlay output directory
+		app('directoryFileList')->delete(getBasePath().'/overlay_output/'.$uid, false);
+		
+		// respond
+		app('respond')->json(true, 'Project deleted.');
+		
+	}
+	
+}
+
+?>

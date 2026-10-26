@@ -1,18 +1,18 @@
-# FSDImages
-![FSD Dynamic Data Images](/logo.png)
+# FSD Studio
+![FSD Studio](/logo.png)
 - Automate image changes using custom data fields, datasets and asset lists
 - Control 3rd party applications like OBS and Voicemeeter!
 - Available websocket API is simple and allows for creating custom apps that manage your applications data and actions
 
 > [!IMPORTANT]  
-> The primary directory **FSDImages** cannot be renamed. FSDImages does not use Apache and therefore has no hierarchical method to manage data paths. The directory named FSDImages is used for relative pathing.
+> The primary directory **FSDStudio** cannot be renamed. FSDStudio does not use Apache and therefore has no hierarchical method to manage data paths. The directory named FSDStudio is used for relative pathing.
 
 > [!NOTE]
-> Launching the FSDImages application on your local ipv4 (`php start.php external`) does allow remote access to the application, but only supports a single "controller" at the API level. This will be the first client connected. There is currently no shared data between the two devices, so please control from one device at a time, although multi device controller support will be a future feature. Custom API apps allow many different devices to control separate or shared portions of the application that work in tandem with an active controller. External connections must have their IP whitelisted from the FILE menu's `Whitelisted IP Addresses` tab. This includes any API application with write permissions to the active controller. Please open the [API README.md](api/README.md) for more information. 
+> Launching the FSDStudio application on your local ipv4 (`php start.php external`) does allow remote access to the application, but only supports a single "controller" at the API level. This will be the first client connected. There is currently no shared data between the two devices, so please control from one device at a time, although multi device controller support will be a future feature. Custom API apps allow many different devices to control separate or shared portions of the application that work in tandem with an active controller. External connections must have their IP whitelisted from the FILE menu's `Whitelisted IP Addresses` tab. This includes any API application with write permissions to the active controller. Please open the [API README.md](api/README.md) for more information. 
 
 ## Windows Download
-- Download and extract from: [https://firststepdesign.co/file/FSDImages.zip](https://firststepdesign.co/file/FSDImages.zip) (28.6 MB)
-- Launch `FSDImages.hta`
+- Download and extract from: [https://firststepdesign.co/file/FSDStudio.zip](https://firststepdesign.co/file/FSDStudio.zip) (28.6 MB)
+- Launch `FSDStudio.hta`
 - Select `Start Application` from the application launcher. Choose `Localhost` then click `APP: localhost:8000` to open the application in a browser!
 	- If the application fails to launch, please check the `output.log` file. The most likely culprit is an outdated C++ windows library for running PHP [Windows Latest C++ Redistributable](https://learn.microsoft.com/en-us/cpp/windows/latest-supported-vc-redist?view=msvc-170#latest-supported-redistributable-version).
 - API server can be initialized from the launcher or within the application itself
@@ -45,8 +45,8 @@
 		- ensure the php_openssl extension is enabled `extension=openssl`
 		
 - Clone or Download and extract the repository
-- Rename the primary directory to `FSDImages` NOT `FSDImages-main`
-- Navigate to the **FSDImages** primary directory and launch the application using:
+- Rename the primary directory to `FSDStudio` NOT `FSDStudio-main`
+- Navigate to the **FSDStudio** primary directory and launch the application using:
 	> php start.php
 	
 	- or
@@ -72,6 +72,7 @@
 
 
 ## To-DO
+- Action list for recycling integration processes
 - Overlay Editor
 	- change UI to support an initial screen with all overlays and +create overlay, allowing single click into an overlay
 	- clipping path transform with nested support

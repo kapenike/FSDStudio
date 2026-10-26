@@ -6,12 +6,12 @@ error_reporting(E_ALL);
 // no htaccess or hierarchical structure so create a relative base path method
 function getBasePath() {
 	$cwd = getcwd();
-	if (!str_contains($cwd, 'FSDImages')) {
+	if (!str_contains($cwd, 'FSDStudio')) {
 		http_response_code(400);
 		exit;
 	}
-	$pos = strrpos($cwd, 'FSDImages');
-	return substr($cwd, 0, $pos).'FSDImages/';
+	$pos = strrpos($cwd, 'FSDStudio');
+	return substr($cwd, 0, $pos).'FSDStudio/';
 }
 
 // $APP stores loaded classes as an instance of app({$class})
@@ -27,7 +27,7 @@ function app($app, ...$params) {
 			$split = explode('/', $class_name);
 			$class_name = array_pop($split);
 		}
-		require(getBasePath().'/php_apps/'.$app.'.php');
+		require(getBasePath().'/apps/'.$app.'.php');
 		$APP->$app = new $class_name(...$params);
 	}
 	return $APP->$app;

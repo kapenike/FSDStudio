@@ -397,7 +397,7 @@ html, body {
 	position: absolute;
 	top: 0;
 	right: 0;
-	width: calc(20% + 32px);
+	width: 200px;
 	height: 54px;
 	overflow: hidden;
 	clip-path: polygon(32px 0%, 100% 0%, 100% 100%, 0% 100%);
@@ -407,11 +407,15 @@ html, body {
 	.navigation_logo {
 		height: 22px !important;
 	}
+	.navigation_logo img {
+		height: 94px !important;
+    margin-top: -59px !important;
+	}
 }
 
 .navigation_logo img {
-	width: 110%;
-	margin: -12% 0;
+	height: 76px;
+	margin-top: -11px;
 }
 
 .navigation_offset_block {
