@@ -2,7 +2,7 @@ function getChallongeEntryUI() {
 	return Create('div', {
 		children: [
 			Create('label', {
-				innerHTML: 'Subdomain-Tournament ID',
+				innerHTML: 'Challonge Subdomain-Tournament ID <strong>(or paste the event page URL)</strong>',
 				children: [
 					Create('div', {
 						style: {
@@ -13,7 +13,21 @@ function getChallongeEntryUI() {
 					Create('input', {
 						type: 'text',
 						name: 'tournament_id',
-						value: GLOBAL.active_project.settings?.integrations?.challonge?.tournament_id || ''
+						value: GLOBAL.active_project.settings?.integrations?.challonge?.tournament_id || '',
+						oninput: function () {
+							let url_parts = URL.parse(this.value);
+							if (url_parts !== null) {
+								let sub_domain = url_parts.host.split('.');
+								let center = sub_domain.findIndex(v => v == 'challonge');
+								if (center == 1) {
+									sub_domain = sub_domain[0]+'-';
+								} else {
+									sub_domain = '';
+								}
+								url_parts = url_parts.pathname.split('/').filter(v => v != '');
+								this.value = sub_domain+url_parts[0];
+							}
+						}
 					})
 				]
 			}),

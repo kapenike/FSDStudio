@@ -2,12 +2,23 @@ function getStartGGEntryUI() {
 	return Create('div', {
 		children: [
 			Create('label', {
-				innerHTML: 'Start GG Tournament Slug (e.g. www.start.gg/tournament/<strong>elite-smash-fridays</strong>/details)',
+				innerHTML: 'Start GG Tournament Slug <strong>(or paste the event page URL)</strong>',
 				children: [
 					Create('input', {
 						type: 'text',
 						name: 'tournament_slug',
-						value: GLOBAL.active_project.settings?.integrations?.startgg?.tournament_slug || ''
+						value: GLOBAL.active_project.settings?.integrations?.startgg?.tournament_slug || '',
+						oninput: function () {
+							let url_parts = URL.parse(this.value);
+							if (url_parts !== null) {
+								url_parts = url_parts.pathname.split('/').filter(v => v != '');
+								if (url_parts[0] == 'tournament' && url_parts.length > 1) {
+									this.value = url_parts[1];
+								} else {
+									this.value = 'Invalid URL...';
+								}
+							}
+						}
 					})
 				]
 			}),

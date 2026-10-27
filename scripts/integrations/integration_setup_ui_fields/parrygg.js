@@ -2,12 +2,19 @@ function getParryGGEntryUI() {
 	return Create('div', {
 		children: [
 			Create('label', {
-				innerHTML: 'Parry GG Tournament Slug',
+				innerHTML: 'Parry GG Tournament Slug <strong>(or paste the event page URL)</strong>',
 				children: [
 					Create('input', {
 						type: 'text',
 						name: 'tournament_slug',
-						value: GLOBAL.active_project.settings?.integrations?.parrygg?.tournament_slug || ''
+						value: GLOBAL.active_project.settings?.integrations?.parrygg?.tournament_slug || '',
+						oninput: function () {
+							let url_parts = URL.parse(this.value);
+							if (url_parts !== null) {
+								url_parts = url_parts.pathname.split('/').filter(v => v != '');
+								this.value = url_parts[0];
+							}
+						}
 					})
 				]
 			}),

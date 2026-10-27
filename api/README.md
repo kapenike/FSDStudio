@@ -97,4 +97,23 @@ A worker declares their connection to the API server the same way as a client wi
 A worker can now:
 	- write to clients on a pipe -> `apiserver.writePipe({})`
 	- write to the controller with a list of sources and values -> `apiserver.writeController([{ source: 'team_1/series_score', value: 0 }]);`
+	- create or delete a dataset entry/entries
+		```
+		apiserver.writeController([{
+			source: 'sets/Teams/create',
+			value: {
+				display: 'Imported Team',
+				roster_1: 'Fastrr',
+				roster_2: 'Zell',
+				team_color: '#FF0000',
+				score: '0'
+			}
+		}])
+		```
+		```
+		apiserver.writeController([{
+			source: 'sets/Teams/delete',
+			value: 'uid_0000011'
+		}])
+		```
 	- request new data with a list of paths -> `dataRequest(['series_type'])`, this data will be returned as a message event under `data.requested_data`
