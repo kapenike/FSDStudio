@@ -403,6 +403,12 @@ function printImage(ctx, layer) {
 			output_x = 0-output_x-output_width;
 			ctx.scale(-1,1);
 		}
+		if (layer.effects.shadow.active) {
+			ctx.shadowColor = layer.effects.shadow.color;
+			ctx.shadowBlur = layer.effects.shadow.blur;
+			ctx.shadowOffsetX = layer.effects.shadow.offset_left;
+			ctx.shadowOffsetY = layer.effects.shadow.offset_right;
+		}
 		
 		ctx.drawImage(
 			value.source,
@@ -413,6 +419,9 @@ function printImage(ctx, layer) {
 		);
 		
 		// reset image effects
+		if (layer.effects.shadow.active) {
+			ctx.shadowColor = 'transparent';
+		}
 		if (layer.effects.grayscale) {
 			ctx.filter = 'none';
 		}

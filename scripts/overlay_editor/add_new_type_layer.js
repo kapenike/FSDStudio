@@ -56,7 +56,14 @@ function requestNewLayer(type = 'text', pass_starting_location = false) {
 			value: '',
 			effects: {
 				grayscale: false,
-				mirror: false
+				mirror: false,
+				shadow: {
+					active: false,
+					color: '#00000080',
+					blur: 10,
+					offset_left: 8,
+					offset_right: 8
+				}
 			},
 			offset: {
 				x: x,

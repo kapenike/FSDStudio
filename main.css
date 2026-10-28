@@ -506,6 +506,27 @@ label {
 	color: #ededed;
 }
 
+.image_effects_container label {
+	display: inline-block;
+}
+.image_effects_textlabel {
+	font-size: 13px;
+	display: inline-block;
+}
+.image_effects_checkbox {
+	vertical-align: middle;
+	position: relative;
+	bottom: 1px;
+}
+.effect_properties {
+	padding: 1px 1px 1px 4px;
+}
+.effect_properties label {
+	display: block;
+	font-size: 12px !important;
+	width: 100%;
+}
+
 #image_editor label {
 	color: #132937;
 	font-size: 12px;
