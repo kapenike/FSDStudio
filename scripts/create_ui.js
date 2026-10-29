@@ -344,6 +344,39 @@ function createUIFromData(container, data, submit_to_application, editor = false
 													]
 												});
 												
+											} else if (field.type == 'range') {
+												
+												let range_val = getRealValue(field.source);
+												
+												return Create('div', {
+													className: 'ui_field',
+													data: JSON.stringify({ section: section_index, column: col_index, field: field_index }),
+													children: [
+														Create('label', {
+															innerHTML: getRealValue(field.title)+' <i>('+range_val+')</i>',
+															children: [
+																Create('input', {
+																	type: field.type,
+																	name: field.source,
+																	min: getRealValue(field.min),
+																	max: getRealValue(field.max),
+																	step: getRealValue(field.step),
+																	value: range_val || 0,
+																	checkForAutoSave: (field.auto_save == 'true'
+																		?	function () { onSaveAction(); }
+																		: () => {}
+																	),
+																	onchange: function () { 
+																		this.parentNode.children[0].innerHTML = '('+this.value+')';
+																		logSourceChange(this);
+																		this.checkForAutoSave();
+																	}
+																})
+															]
+														})
+													]
+												});
+												
 											}
 											
 										})
@@ -406,6 +439,9 @@ function resetUISection(section) {
 				break;
 			case 'checkbox':
 				elem.checked = false;
+				break;
+			case 'range':
+				elem.value = 0;
 				break;
 			default:
 				elem.value = '';
@@ -1146,7 +1182,7 @@ function editUIField(elem, is_create = false) {
 							onchange: function () {
 								modifyFieldBuilderOptions(this.value.toLowerCase());
 							},
-							children: ['Text', 'Select', 'Radio', 'Checkbox', 'Dataset', 'Display', 'Button'].map(input_type => {
+							children: ['Text', 'Select', 'Radio', 'Range', 'Checkbox', 'Dataset', 'Display', 'Button'].map(input_type => {
 								return Create('option', {
 									innerHTML: input_type,
 									value: input_type.toLowerCase(),
@@ -1285,6 +1321,17 @@ function editUIField(elem, is_create = false) {
 						};
 					})
 				}
+			} else if (form_data.input_type == 'range') {
+				new_field_data = {
+					type: 'range',
+					hide_on: form_data.input_hide_on,
+					auto_save: form_data.auto_save,
+					title: form_data.input_label,
+					source: form_data.source_path,
+					min: form_data.range_min,
+					max: form_data.range_max,
+					step: form_data.range_step
+				}
 			}
 			
 			// set new field data or create a new field as the first child of the container section
@@ -1338,6 +1385,8 @@ function modifyFieldBuilderOptions(type) {
 	} else if (type == 'button') {
 		Select('#save_to_path_input').style.display = 'none';
 		fieldBuilderForButton(data);
+	} else if (type == 'range') {
+		fieldBuilderForRange(data);
 	}
 }
 
@@ -1529,6 +1578,48 @@ function fieldBuilderForButton(data) {
 		]
 	});
 
+}
+
+function fieldBuilderForRange(data) {
+	// value to set into source when box is checked
+	Select('#input_edit_options', {
+		innerHTML: '',
+		children: [
+			Create('label', {
+				innerHTML: 'Min Value',
+				children: [
+					Create('input', {
+						type: 'number',
+						name: 'range_min',
+						step: 1,
+						value: 0
+					})
+				]
+			}),
+			Create('label', {
+				innerHTML: 'Max Value',
+				children: [
+					Create('input', {
+						type: 'number',
+						name: 'range_max',
+						step: 1,
+						value: 100
+					})
+				]
+			}),
+			Create('label', {
+				innerHTML: 'Step Value',
+				children: [
+					Create('input', {
+						type: 'number',
+						name: 'range_step',
+						step: .1,
+						value: 1
+					})
+				]
+			})
+		]
+	});
 }
 
 function appendNewKeyValuePairInput(key_value) {

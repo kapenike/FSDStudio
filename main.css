@@ -519,7 +519,7 @@ label {
 	bottom: 1px;
 }
 .effect_properties {
-	padding: 1px 1px 1px 4px;
+	padding: 1px 4px 1px 4px;
 }
 .effect_properties label {
 	display: block;
@@ -619,6 +619,51 @@ button, input[type="submit"] {
   font-weight: 500;
   text-decoration: none;
   cursor: pointer;
+}
+
+input[type="range"] {
+  -webkit-appearance: none;
+  width: 100%;
+  background: transparent;
+  cursor: pointer;
+	margin-bottom: 16px !important;
+	margin-top: 10px;
+}
+
+input[type="range"]::-webkit-slider-runnable-track {
+  height: 8px;
+  background: #e2e8f0;
+  border-radius: 10px;
+  border: 0px solid #cbd5e1;
+  box-shadow: 0px 2px 0px rgba(0, 0, 0, 0.1);
+}
+
+input[type="range"]::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  height: 24px;
+  width: 24px;
+  background: #39b3b5;
+  border-radius: 30px;
+  border: 1px solid #f5c527;
+  box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.3);
+  margin-top: -8px;
+}
+
+input[type="range"]::-moz-range-track {
+  height: 8px;
+  background: #e2e8f0;
+  border-radius: 10px;
+  border: 0px solid #cbd5e1;
+  box-shadow: 0px 2px 0px rgba(0, 0, 0, 0.1);
+}
+
+input[type="range"]::-moz-range-thumb {
+  height: 24px;
+  width: 24px;
+  background: #39b3b5;
+  border-radius: 30px;
+  border: 1px solid #f5c527;
+  box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.3);
 }
 
 .ui_edit_menu {

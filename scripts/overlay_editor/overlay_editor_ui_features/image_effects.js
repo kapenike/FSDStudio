@@ -107,45 +107,48 @@ function featureImageEffects(layer) {
 												olsGeneralLog();
 											}),
 											Create('label', {
-												innerHTML: 'Blur'
+												innerHTML: 'Blur (<i id="blur_range" style="font-size:11px">'+layer.effects.shadow.blur+'</i>)'
 											}),
 											Create('input', {
 												type: 'range',
 												min: 0,
-												max: 100,
+												max: 200,
 												value: layer.effects.shadow.blur,
 												step: 1,
 												onchange: function () {
+													Select('#blur_range').innerHTML = this.value;
 													getLayerById(GLOBAL.overlay_editor.active_layer).effects.shadow.blur = this.value;
 													printCurrentCanvas();
 													olsGeneralLog();
 												}
 											}),
 											Create('label', {
-												innerHTML: 'X Offset'
+												innerHTML: 'X Offset (<i id="offset_left_range" style="font-size:11px">'+layer.effects.shadow.offset_left+'</i>)'
 											}),
 											Create('input', {
 												type: 'range',
-												min: 0,
+												min: -100,
 												max: 100,
 												value: layer.effects.shadow.offset_left,
 												step: 1,
 												onchange: function () {
+													Select('#offset_left_range').innerHTML = this.value;
 													getLayerById(GLOBAL.overlay_editor.active_layer).effects.shadow.offset_left = this.value;
 													printCurrentCanvas();
 													olsGeneralLog();
 												}
 											}),
 											Create('label', {
-												innerHTML: 'Y Offset'
+												innerHTML: 'Y Offset (<i id="offset_right_range" style="font-size:11px">'+layer.effects.shadow.offset_right+'</i>)'
 											}),
 											Create('input', {
 												type: 'range',
-												min: 0,
+												min: -100,
 												max: 100,
 												value: layer.effects.shadow.offset_right,
 												step: 1,
 												onchange: function () {
+													Select('#offset_right_range').innerHTML = this.value;
 													getLayerById(GLOBAL.overlay_editor.active_layer).effects.shadow.offset_right = this.value;
 													printCurrentCanvas();
 													olsGeneralLog();
