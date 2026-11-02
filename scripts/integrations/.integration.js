@@ -174,7 +174,7 @@ class integration {
 				
 				let entry = GLOBAL.active_project.data.sets[dataset].entries[entry_uid];
 				
-				let preserving = (preserve !== null && typeof preserve.entries !== 'undefined' && preserve.entries !== false);
+				let preserving = (preserve !== null && typeof preserve.entries !== 'undefined' && preserve.preserve !== false);
 				
 				let found = (preserving ? entries[entries.findIndex(v => v[preserve.entries] == entry[preserve.entries])] : false);
 				
