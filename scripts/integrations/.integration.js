@@ -193,7 +193,7 @@ class integration {
 						}
 					});
 					
-				} else if (preserving && preserve.preserve === false) {
+				} else if (preserve.preserve === false) {
 					
 					// if not found and preserve is false, set to remove
 					update_list.push({
