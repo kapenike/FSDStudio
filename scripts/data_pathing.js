@@ -453,15 +453,17 @@ function getRealValue(value, depth = null, base_path = GLOBAL.active_project.dat
 					if (typeof reference_path[path_part] === 'undefined') {
 						// allow logging in case of attempt to fix large chaining logical errors in a project
 						// console.info('Attempting to access undefined object from variable path: '+value+', Undefined key path starting at: '+[path_part, ...path].join('/'));
-						return '';
-					}
-					
-					// path forwarding allowed only when depth value search is not enabled
-					if (depth == null && typeof reference_path[path_part] === 'string') {
-						reference_path = getRealValue(reference_path[path_part], null, base_path, head);
+						reference_path = '';
 					} else {
-						// shift from use path into reference path
-						reference_path = reference_path[path_part];
+					
+						// path forwarding allowed only when depth value search is not enabled
+						if (depth == null && typeof reference_path[path_part] === 'string') {
+							reference_path = getRealValue(reference_path[path_part], null, base_path, head);
+						} else {
+							// shift from use path into reference path
+							reference_path = reference_path[path_part];
+						}
+					
 					}
 					
 				}

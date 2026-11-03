@@ -70,6 +70,8 @@
 	
 - Visit `localhost:8000` (or external IPv4:8000) in your web browser to start using the application!
 
+## Public Projects
+- Parry.gg and Start.gg integration wireframe [https://firststepdesign.co/file/FGC-Base.fsdi](https://firststepdesign.co/file/FGC-Base.fsdi) (9 KB)
 
 ## To-DO
 - Action list for recycling integration processes

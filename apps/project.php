@@ -520,7 +520,7 @@ class project {
 			$zip->close();
 			
 			// front end will now redirect to downloadAndDelete method below
-			app('respond')->json(true, 'Archive successfully create.', ['project_name' => $project_name]);
+			app('respond')->json(true, 'Archive successfully create.', ['project_name' => $file_safe_project_name]);
 			
 		} else {
 			app('respond')->json(false, 'Error creating archive export for project: '.$project_name);
