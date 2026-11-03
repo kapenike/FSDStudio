@@ -188,8 +188,6 @@ class parrygg extends integration {
 				});
 			}
 			
-			console.log(entries);
-			
 			this.importDataset('PGG_Tournament',
 				entries,
 				['display','bracket','team_size','event_id','phase_id','bracket_id','last_set_update'], 
