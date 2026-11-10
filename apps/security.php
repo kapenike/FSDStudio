@@ -46,6 +46,7 @@ class security {
 			return true;
 		}
 		
+		// failed ip check, look for authorized scripts or specific error declarations
 		$access_url = parse_url($_SERVER['REQUEST_URI']);
 		
 		// allow access to api_connection_library.js.php and fonts.php library
@@ -53,8 +54,14 @@ class security {
 			return true;
 		}
 		
+		// if worker auth connection, instead declare an undefined variable
+		if ($access_url['path'] == '/worker_auth_connection_key.js.php') {
+			echo 'const API_WORKER_AUTH_TOKEN = undefined;';
+			exit;
+		}
+		
 		// unauthorized access to external application
-		echo '<h1>Unauthorized</h1><p>If this is a mistake, please whitelist this IP from the servers local application: <strong>'.$_SERVER['REMOTE_ADDR'].'</strong></p>';
+		echo '<html><head><meta name="viewport" content="width=device-width, initial-scale=1.0"></head><body style="font-family:arial;"><div style="text-align:center;"><h1>Unauthorized</h1><p>If this is a mistake, please whitelist the following IP from the servers local application: <h3>'.$_SERVER['REMOTE_ADDR'].'</h3></p></div></body></html>';
 		exit;
 	}
 	

@@ -16,6 +16,12 @@ class api_server {
 	event_functions = null;
 	
 	constructor(project_uid, listeners, event_functions, is_self_controlled = true) {
+
+		// if listeners defining a worker connection with an undefined auth token, forward to get_auth.php
+		if (listeners && listeners.pipe && listeners.pipe.constructor.name === 'Object' && typeof listeners.pipe.token === 'undefined') {
+			window.location.href = '/get_auth.php';
+			return;
+		}
 		
 		// create connection
 		this.connection = new WebSocket('ws://<?php echo $config->api_ip.':'.$config->ws_port; ?>');
