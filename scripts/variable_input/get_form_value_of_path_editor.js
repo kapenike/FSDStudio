@@ -26,7 +26,8 @@ function getFormValueOfPathSelection(id, value) {
 					pointer_value = 1;
 				}
 			}
-			output += '$var$'+(data.path_only ? '$pointer$'+pointer_value+'$/pointer$' : '')+node.innerHTML+'$/var$';
+			
+			output += '$var$'+(data.path_only ? '$pointer$'+pointer_value+'$/pointer$' : '')+node.childNodes[0].textContent+'$/var$';
 			
 		} else {
 			

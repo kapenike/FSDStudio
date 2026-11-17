@@ -73,6 +73,35 @@ html, body {
 	pointer-events: none;
 }
 
+/* variable line editor popup styling */
+.line_popup {
+	position: absolute;
+	z-index: 889;
+	top: 0;
+	left: 0;
+	width: 100%;
+	height: 100%;
+	background-color: #13293772;
+	padding: 40px;
+	box-sizing: border-box;
+}
+.line_popup .popup_inner {
+	background-color: #132932;
+	border: 1px solid #00000060;
+	padding: 40px;
+	width: 100%;
+	max-width: 600px;
+	margin: 0 auto;
+	box-sizing: border-box;
+	height: auto !important;
+}
+.line_popup .popup_close {
+	font-size: 24px;
+	float: right;
+	cursor: pointer;
+	padding: 8px 16px;
+}
+
 /* popup styling */
 #popup,
 #notif_popup {
@@ -283,6 +312,19 @@ html, body {
 	color: #b3cde0;
 	font-style: italic;
 	padding: 2px 8px;
+	position: relative;
+}
+.path_variable_entry .real_time_value {
+	position: absolute;
+	top: -25%;
+	left: 5px;
+	font-size: 8px;
+	white-space: nowrap;
+	overflow: hidden;
+	max-width: 97%;
+	display: inline-block;
+	background-color: #05828e80;
+	color: #ffffff;
 }
 
 .path_var_container input[type="checkbox"] {

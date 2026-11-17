@@ -177,7 +177,9 @@ function closeApp(master, navigation = null) {
 
 function onSaveAction() {
 	// edge case, if popup available, click popup save button
-	if (Select('#popup_save_action')) {
+	if (Select('#inline_variable_edit_update')) {
+		Select('#inline_variable_edit_update').click();
+	} else if (Select('#popup_save_action')) {
 		Select('#popup_save_action').click();
 	} else {
 		// else, run current app save if loader is not present within the app
