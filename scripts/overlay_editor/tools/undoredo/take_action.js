@@ -555,12 +555,15 @@ class ols {
 				} else if (is_child) {
 
 					// if state change is a parent of the compile id, search for sub changes and pull them in
+					// not possible if nest is null (parent non child affecting action)
 					let ref = this.changes[i];
-					let id_list = id.split('_');
-					for (let i2=this.changes[i].id.split('_').length; i2<id_list.length; i2++) {
-						ref = ref.nest[id_list[i2]];
+					if (ref.nest !== null) {
+						let id_list = id.split('_');
+						for (let i2=this.changes[i].id.split('_').length; i2<id_list.length; i2++) {
+							ref = ref.nest[id_list[i2]];
+						}
+						this.updateLayers(ref, obj);
 					}
-					this.updateLayers(ref, obj);
 
 				}
 			}

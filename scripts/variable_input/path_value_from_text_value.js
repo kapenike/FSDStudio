@@ -18,7 +18,7 @@ function createPathVariableEntry(path) {
 	
 	let real_time_value = getRealValue('$var$'+path+'$/var$');
 	if (isObject(real_time_value)) {
-		real_time_value = real_time_value.display;
+		real_time_value = '<strong>{}</strong> '+real_time_value.display;
 	}
 	
 	return Create('span', {

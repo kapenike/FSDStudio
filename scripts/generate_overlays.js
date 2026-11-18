@@ -101,7 +101,15 @@ function sendAPI(output_overlays, sources) {
 	}
 }
 
-function printLayers(ctx, layers, init = false) {
+function readGlobalAlpha(all) {
+	let v = 1;
+	for (let i=0; i<all.length; i++) {
+		v = v*(all[i]/100);
+	}
+	return v;
+}
+
+function printLayers(ctx, layers, global_alpha = [], init = false) {
 	
 	// if init of print layer, and asset preloading is disabled, load in required assets before call back
 	if (init == true && GLOBAL.active_project.settings.disable_asset_preload) {
@@ -114,6 +122,12 @@ function printLayers(ctx, layers, init = false) {
 	
 		// active layer
 		let layer = layers[i];
+		
+		// push current layer alpha
+		global_alpha.push(layer.opacity);
+		
+		// set alpha channel
+		ctx.globalAlpha = readGlobalAlpha(global_alpha);
 		
 		if (layer.type == 'image') {
 			printImage(ctx, layer);
@@ -167,7 +181,7 @@ function printLayers(ctx, layers, init = false) {
 				}
 				
 				// print sub layers
-				printLayers(ctx, layer.layers);
+				printLayers(ctx, layer.layers, global_alpha);
 				
 				// if clipping path, restore
 				if (layer.clip_path.type != 'none') {
@@ -223,11 +237,16 @@ function printLayers(ctx, layers, init = false) {
 				
 			}
 			
-		} else if (layer.type == 'rect') {
-			printRect(ctx, layer);
 		}
+		
+		// remove this layers alpha channel in prep of next layer
+		global_alpha.pop();
 	
 	}
+	
+	// reset global alpha
+	ctx.globalAlpha = 1;
+	
 }
 
 function prepareNonPreloadPrint(ctx, layers) {
@@ -305,7 +324,7 @@ function generateOverlay(ctx, output_overlays, overlay) {
 	ctx.clearRect(0, 0, overlay.dimensions.width, overlay.dimensions.height);
 	
 	// print layers recursively
-	printLayers(ctx, overlay.layers, true);
+	printLayers(ctx, overlay.layers, [], true);
 	
 }
 

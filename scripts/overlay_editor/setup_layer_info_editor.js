@@ -63,6 +63,7 @@ function setupLayerInfoEditor() {
 					})
 				]
 			}),
+			featureLayerOpacity(layer),
 			(layer.type == 'text' ? featureTextStyle(layer) : Create('div')), // text styling UI
 			(layer.type == 'text' ? featureTextRotation(layer) : Create('div')), // text rotation UI
 			(layer.type != 'clip_path' ? featureDimensionsAndPosition(layer) : Create('div')), // dimensions and position UI for non group layers

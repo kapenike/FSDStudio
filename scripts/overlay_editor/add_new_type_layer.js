@@ -25,6 +25,7 @@ function requestNewLayer(type = 'text', pass_starting_location = false) {
 			toggle: '',
 			title: 'Untitled Text Layer',
 			value: '',
+			opacity: 100,
 			style: {
 				font: '\'Arial\'',
 				fontStyle: 'normal',
@@ -54,6 +55,7 @@ function requestNewLayer(type = 'text', pass_starting_location = false) {
 			toggle: '',
 			title: 'Untitled Image Layer',
 			value: '',
+			opacity: 100,
 			effects: {
 				grayscale: false,
 				mirror: false,
@@ -86,6 +88,7 @@ function requestNewLayer(type = 'text', pass_starting_location = false) {
 			type: 'clip_path',
 			toggle: '',
 			title: 'Untitled Group',
+			opacity: 100,
 			clip_path: {
 				type: 'none',
 				color: '',

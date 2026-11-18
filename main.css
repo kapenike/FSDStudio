@@ -666,9 +666,9 @@ button, input[type="submit"] {
 input[type="range"] {
   -webkit-appearance: none;
   width: 100%;
-  background: transparent;
+  background: transparent !important;
   cursor: pointer;
-	margin-bottom: 16px !important;
+	margin-bottom: 10px !important;
 	margin-top: 10px;
 }
 
