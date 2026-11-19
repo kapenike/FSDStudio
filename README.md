@@ -80,4 +80,3 @@
 	- clipping path transform with nested support
 	- allow inside / outside path border
 	- allow gradient
-	- allow layer opacity rather than just fill / border and text opacity

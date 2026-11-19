@@ -27,7 +27,15 @@ function getFormValueOfPathSelection(id, value) {
 				}
 			}
 			
-			output += '$var$'+(data.path_only ? '$pointer$'+pointer_value+'$/pointer$' : '')+node.childNodes[0].textContent+'$/var$';
+			let found_text = '';
+			for (let i=0; i<node.childNodes.length; i++) {
+				if (node.childNodes[i].nodeType === Node.TEXT_NODE) {
+					found_text = node.childNodes[i].textContent || node.childNodes[i].nodeValue || node.childNodes[i].data;
+					break;
+				}
+			}
+
+			output += '$var$'+(data.path_only ? '$pointer$'+pointer_value+'$/pointer$' : '')+found_text+'$/var$';
 			
 		} else {
 			
